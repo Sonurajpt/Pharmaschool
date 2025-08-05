@@ -60,22 +60,23 @@
   <button onclick="downloadPDF()">Get PDF</button>
 
   <script>
-    function downloadPDF() {
-      const course = document.getElementById("course").value;
-      const semester = document.getElementById("semester").value;
-      const subject = document.getElementById("subject").value;
-      const unit = document.getElementById("unit").value;
+  window.Telegram.WebApp.expand(); // ✅ Expand the WebApp height
 
-      const pdfURL = `https://yourpdfserver.com/${course}/${semester}/${subject}/${unit}.pdf`;
+  function downloadPDF() {
+    const course = document.getElementById("course").value;
+    const semester = document.getElementById("semester").value;
+    const subject = document.getElementById("subject").value;
+    const unit = document.getElementById("unit").value;
 
-      // Optionally send to Telegram bot
-      if (window.Telegram.WebApp) {
-        Telegram.WebApp.sendData(`${course} | ${semester} | ${subject} | ${unit}`);
-      }
+    const pdfURL = `https://yourpdfserver.com/${course}/${semester}/${subject}/${unit}.pdf`;
 
-      // Open PDF
-      window.open(pdfURL, "_blank");
+    // Optionally send to Telegram bot
+    if (window.Telegram.WebApp) {
+      Telegram.WebApp.sendData(`${course} | ${semester} | ${subject} | ${unit}`);
     }
-  </script>
+
+    window.open(pdfURL, "_blank");
+  }
+</script>
 </body>
 </html>
