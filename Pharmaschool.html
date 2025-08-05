@@ -1,50 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Pharma Mini App</title>
+  <title>Pharma School</title>
   <meta charset="utf-8">
-  <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    select, button { display: block; margin: 10px 0; padding: 10px; width: 100%; }
-    h2 { margin-top: 20px; }
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      color: #2d2d2d;
+    }
+    select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    button {
+      background-color: #0088cc;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
   </style>
-  
 </head>
 <body>
-  <h1>📘 Pharma Study Material</h1>
-
-  <h2>📚 Select Course:</h2>
+  <h2>Select Course</h2>
   <select id="course">
     <option value="bpharm">B.Pharm</option>
     <option value="dpharm">D.Pharm</option>
     <option value="bscbiotech">B.Sc. Biotech</option>
   </select>
 
-  <h2>🧾 Select Semester:</h2>
+  <h2>Select Semester</h2>
   <select id="semester">
     <option value="sem1">1st Semester</option>
     <option value="sem2">2nd Semester</option>
-    <option value="sem3">3rd Semester</option>
-    <option value="sem4">4th Semester</option>
-    <option value="sem5">5th Semester</option>
-    <option value="sem6">6th Semester</option>
-    <option value="sem7">7th Semester</option>
-    <option value="sem8">8th Semester</option>
+    <!-- Add all 8 -->
   </select>
 
-  <h2>📘 Select Subject:</h2>
+  <h2>Select Subject</h2>
   <select id="subject">
-    <option value="pic">Pharmaceutical Inorganic Chemistry</option>
+    <option value="pharmaceutical-inorganic-chemistry">Pharmaceutical Inorganic Chemistry</option>
     <option value="pharmaceutics">Pharmaceutics</option>
-    <option value="hap">Human Anatomy & Physiology</option>
-    <option value="pa">Pharmaceutical Analysis</option>
-    <option value="cs">Communication Skills</option>
-    <option value="math">Mathematics in Pharmacy</option>
+    <option value="human-anatomy">Human Anatomy & Physiology</option>
   </select>
 
-  <h2>📄 Select Unit:</h2>
+  <h2>Select Unit</h2>
   <select id="unit">
     <option value="unit1">Unit 1</option>
     <option value="unit2">Unit 2</option>
@@ -53,19 +57,23 @@
     <option value="unit5">Unit 5</option>
   </select>
 
-  <button onclick="downloadPDF()">📥 Download PDF</button>
+  <button onclick="downloadPDF()">Get PDF</button>
 
   <script>
     function downloadPDF() {
-      const course = document.getElementById('course').value;
-      const semester = document.getElementById('semester').value;
-      const subject = document.getElementById('subject').value;
-      const unit = document.getElementById('unit').value;
+      const course = document.getElementById("course").value;
+      const semester = document.getElementById("semester").value;
+      const subject = document.getElementById("subject").value;
+      const unit = document.getElementById("unit").value;
 
-      // Construct PDF file URL
-      const baseUrl = "https://yourstorage.com/pdf"; // 👈 replace with real URL or TeraBox
-      const pdfURL = `${baseUrl}/${course}/${semester}/${subject}/${unit}.pdf`;
+      const pdfURL = `https://yourpdfserver.com/${course}/${semester}/${subject}/${unit}.pdf`;
 
+      // Optionally send to Telegram bot
+      if (window.Telegram.WebApp) {
+        Telegram.WebApp.sendData(`${course} | ${semester} | ${subject} | ${unit}`);
+      }
+
+      // Open PDF
       window.open(pdfURL, "_blank");
     }
   </script>
