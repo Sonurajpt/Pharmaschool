@@ -1,101 +1,111 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Pharma School</title>
-  <meta charset="utf-8">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      padding: 20px;
-    }
-    h2 {
-      color: #2d2d2d;
-    }
-    select, button {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      font-size: 16px;
-    }
-    button {
-      background-color: #0088cc;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+    body { font-family: sans-serif; padding: 20px; background: #f2f2f2; }
+    select, button { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; }
+    #pdfLink { display: none; margin-top: 20px; text-align: center; }
+    a { color: white; background: #0088cc; padding: 12px 20px; border-radius: 8px; text-decoration: none; display: inline-block; }
   </style>
 </head>
 <body>
-  <h2>Select Course</h2>
-  <select id="courseSelect">
-    <option value="bpharm">B.Pharm</option>
-    <option value="dpharm">D.Pharm</option>
-    <option value="bscbiotech">B.Sc. Biotech</option>
-  </select>
+  <h2>📚 Pharma School</h2>
 
-  <h2>Select Semester</h2>
-  <select id="semester">
-    <option value="sem1">1st Semester</option>
-    <option value="sem2">2nd Semester</option>
-    <!-- Add all 8 -->
-  </select>
+  <select id="course"></select>
+  <select id="semester"></select>
+  <select id="subject"></select>
+  <select id="unit"></select>
 
-  <h2>Select Subject</h2>
-  <select id="subject">
-    <option value="pharmaceutical-inorganic-chemistry">Pharmaceutical Inorganic Chemistry</option>
-    <option value="pharmaceutics">Pharmaceutics</option>
-    <option value="human-anatomy">Human Anatomy & Physiology</option>
-  </select>
-
-  <h2>Select Unit</h2>
-  <select id="unit">
-    <option value="unit1">Unit 1</option>
-    <option value="unit2">Unit 2</option>
-    <option value="unit3">Unit 3</option>
-    <option value="unit4">Unit 4</option>
-    <option value="unit5">Unit 5</option>
-  </select>
-
-  <button onclick="downloadPDF()">Get PDF</button>
+  <div id="pdfLink">
+    <a id="pdfBtn" href="#" target="_blank">📄 Open PDF</a>
+  </div>
 
   <script>
-  window.Telegram.WebApp.expand(); // ✅ Expand the WebApp height
+    const courseSelect = document.getElementById("course");
+    const semesterSelect = document.getElementById("semester");
+    const subjectSelect = document.getElementById("subject");
+    const unitSelect = document.getElementById("unit");
+    const pdfLink = document.getElementById("pdfLink");
+    const pdfBtn = document.getElementById("pdfBtn");
 
-  function downloadPDF() {
-    const course = document.getElementById("course").value;
-    const semester = document.getElementById("semester").value;
-    const subject = document.getElementById("subject").value;
-    const unit = document.getElementById("unit").value;
+    let data = {};
 
-    const pdfURL = `https://yourpdfserver.com/${course}/${semester}/${subject}/${unit}.pdf`;
+    // Load JSON
+    fetch("https://raw.githubusercontent.com/Sonurajpt/Pharm.json/refs/heads/main/Pharm.json")
+      .then(response => response.json())
+      .then(json => {
+        data = json;
+        loadCourses();
+      });
 
-    // Optionally send to Telegram bot
-    if (window.Telegram.WebApp) {
-      Telegram.WebApp.sendData(`${course} | ${semester} | ${subject} | ${unit}`);
+    function loadCourses() {
+      courseSelect.innerHTML = `<option selected disabled>Select Course</option>`;
+      Object.keys(data).forEach(course => {
+        const option = document.createElement("option");
+        option.value = course;
+        option.text = course;
+        courseSelect.appendChild(option);
+      });
     }
 
-    window.open(pdfURL, "_blank");
-  }
-</script>
-  <script>
-async function loadCourses() {
-  const response = await fetch("https://raw.githubusercontent.com/Sonurajpt/Pharm.json/main/Pharm.json");
-  const data = await response.json();
+    courseSelect.addEventListener("change", () => {
+      const course = courseSelect.value;
+      semesterSelect.innerHTML = `<option selected disabled>Select Semester</option>`;
+      subjectSelect.innerHTML = `<option selected disabled>Select Subject</option>`;
+      unitSelect.innerHTML = `<option selected disabled>Select Unit</option>`;
+      pdfLink.style.display = "none";
 
-  const courseList = Object.keys(data);
-  const courseSelect = document.getElementById("courseSelect");
+      Object.keys(data[course]).forEach(sem => {
+        const option = document.createElement("option");
+        option.value = sem;
+        option.text = sem;
+        semesterSelect.appendChild(option);
+      });
+    });
 
-  courseList.forEach(course => {
-    const option = document.createElement("option");
-    option.value = course;
-    option.textContent = course;
-    courseSelect.appendChild(option);
-  });
+    semesterSelect.addEventListener("change", () => {
+      const course = courseSelect.value;
+      const sem = semesterSelect.value;
+      subjectSelect.innerHTML = `<option selected disabled>Select Subject</option>`;
+      unitSelect.innerHTML = `<option selected disabled>Select Unit</option>`;
+      pdfLink.style.display = "none";
 
-  // Add event listeners for course → semester → subject → unit etc.
-}
-window.onload = loadCourses;
-</script>
+      Object.keys(data[course][sem]).forEach(subject => {
+        const option = document.createElement("option");
+        option.value = subject;
+        option.text = subject;
+        subjectSelect.appendChild(option);
+      });
+    });
+
+    subjectSelect.addEventListener("change", () => {
+      const course = courseSelect.value;
+      const sem = semesterSelect.value;
+      const subject = subjectSelect.value;
+      unitSelect.innerHTML = `<option selected disabled>Select Unit</option>`;
+      pdfLink.style.display = "none";
+
+      Object.keys(data[course][sem][subject]).forEach(unit => {
+        const option = document.createElement("option");
+        option.value = unit;
+        option.text = unit;
+        unitSelect.appendChild(option);
+      });
+    });
+
+    unitSelect.addEventListener("change", () => {
+      const course = courseSelect.value;
+      const sem = semesterSelect.value;
+      const subject = subjectSelect.value;
+      const unit = unitSelect.value;
+      const pdfURL = data[course][sem][subject][unit];
+
+      pdfBtn.href = pdfURL;
+      pdfLink.style.display = "block";
+    });
+  </script>
 </body>
 </html>
