@@ -1,165 +1,106 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script src='//libtl.com/sdk.js' data-zone='9669778' data-sdk='show_9669778'></script>
-
   <meta charset="UTF-8">
   <title>Pharma School</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Monetag SDK -->
+  <script src="//libtl.com/sdk.js" data-zone="9669778" data-sdk="show_9669778"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; background: #f2f2f2; }
     select, button { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; }
     #pdfLink { display: none; margin-top: 20px; text-align: center; }
-    a { color: white; background: #0088cc; padding: 12px 20px; border-radius: 8px; text-decoration: none; display: inline-block; }
+    a.btn { display: inline-block; color: white; background: #0088cc; padding: 12px 20px; border-radius: 8px; text-decoration: none; }
   </style>
 </head>
 <body>
   <h2>📚 Pharma School</h2>
-
   <select id="course"></select>
   <select id="semester"></select>
   <select id="subject"></select>
   <select id="unit"></select>
 
   <div id="pdfLink">
-    <a id="pdfBtn" href="#" target="_blank">📄 Open PDF</a>
+    <a id="pdfBtn" class="btn" href="#" target="_blank">📄 Open PDF</a>
   </div>
 
   <script>
-    const courseSelect = document.getElementById("course");
-    const semesterSelect = document.getElementById("semester");
+    // grab DOM
+    const courseSelect  = document.getElementById("course");
+    const semesterSelect= document.getElementById("semester");
     const subjectSelect = document.getElementById("subject");
-    const unitSelect = document.getElementById("unit");
-    const pdfLink = document.getElementById("pdfLink");
-    const pdfBtn = document.getElementById("pdfBtn");
-
+    const unitSelect    = document.getElementById("unit");
+    const pdfLinkWrap   = document.getElementById("pdfLink");
+    const pdfBtn        = document.getElementById("pdfBtn");
     let data = {};
 
-    // Load JSON
+    // fetch your JSON
     fetch("https://raw.githubusercontent.com/Sonurajpt/Pharm.json/refs/heads/main/Pharm.json")
-      .then(response => response.json())
-      .then(json => {
+      .then(res=>res.json())
+      .then(json=>{
         data = json;
-        loadCourses();
+        populate(courseSelect, Object.keys(data), "Select Course");
       });
 
-    function loadCourses() {
-      courseSelect.innerHTML = `<option selected disabled>Select Course</option>`;
-      Object.keys(data).forEach(course => {
-        const option = document.createElement("option");
-        option.value = course;
-        option.text = course;
-        courseSelect.appendChild(option);
+    // helper: fill a <select>
+    function populate(sel, items, placeholder){
+      sel.innerHTML = `<option disabled selected>${placeholder}</option>`;
+      items.forEach(i=>{
+        const opt = document.createElement("option");
+        opt.value = i; opt.textContent = i;
+        sel.appendChild(opt);
+      });
+      sel.disabled = false;
+    }
+
+    // chain listeners
+    courseSelect.addEventListener("change",()=>{
+      const c = courseSelect.value;
+      populate(semesterSelect, Object.keys(data[c]), "Select Semester");
+      reset([subjectSelect, unitSelect], ["Select Subject","Select Unit"]);
+      pdfLinkWrap.style.display="none";
+    });
+    semesterSelect.addEventListener("change",()=>{
+      const c=courseSelect.value, s=semesterSelect.value;
+      populate(subjectSelect, Object.keys(data[c][s]), "Select Subject");
+      reset([unitSelect], ["Select Unit"]);
+      pdfLinkWrap.style.display="none";
+    });
+    subjectSelect.addEventListener("change",()=>{
+      const c=courseSelect.value, s=semesterSelect.value, sub=subjectSelect.value;
+      populate(unitSelect, Object.keys(data[c][s][sub]), "Select Unit");
+      pdfLinkWrap.style.display="none";
+    });
+    unitSelect.addEventListener("change",()=>{
+      const c=courseSelect.value, s=semesterSelect.value, sub=subjectSelect.value, u=unitSelect.value;
+      const url = data[c][s][sub][u];
+      pdfBtn.href = url;
+      pdfLinkWrap.style.display = "block";
+    });
+
+    // reset selects
+    function reset(selects, placeholders){
+      selects.forEach((sel,i)=>{
+        sel.innerHTML = `<option disabled selected>${placeholders[i]}</option>`;
+        sel.disabled=true;
       });
     }
 
-    courseSelect.addEventListener("change", () => {
-      const course = courseSelect.value;
-      semesterSelect.innerHTML = `<option selected disabled>Select Semester</option>`;
-      subjectSelect.innerHTML = `<option selected disabled>Select Subject</option>`;
-      unitSelect.innerHTML = `<option selected disabled>Select Unit</option>`;
-      pdfLink.style.display = "none";
-
-      Object.keys(data[course]).forEach(sem => {
-        const option = document.createElement("option");
-        option.value = sem;
-        option.text = sem;
-        semesterSelect.appendChild(option);
+    // monetag + download flow
+    pdfBtn.addEventListener("click", e=>{
+      e.preventDefault();
+      // show rewarded ad first
+      show_9669778().then(()=>{
+        // after ad, perform actual download/open
+        window.open(pdfBtn.href, "_blank");
+      }).catch(err=>{
+        console.warn("Ad failed or closed:", err);
+        // fallback: still open PDF
+        window.open(pdfBtn.href, "_blank");
       });
     });
-
-    semesterSelect.addEventListener("change", () => {
-      const course = courseSelect.value;
-      const sem = semesterSelect.value;
-      subjectSelect.innerHTML = `<option selected disabled>Select Subject</option>`;
-      unitSelect.innerHTML = `<option selected disabled>Select Unit</option>`;
-      pdfLink.style.display = "none";
-
-      Object.keys(data[course][sem]).forEach(subject => {
-        const option = document.createElement("option");
-        option.value = subject;
-        option.text = subject;
-        subjectSelect.appendChild(option);
-      });
-    });
-
-    subjectSelect.addEventListener("change", () => {
-      const course = courseSelect.value;
-      const sem = semesterSelect.value;
-      const subject = subjectSelect.value;
-      unitSelect.innerHTML = `<option selected disabled>Select Unit</option>`;
-      pdfLink.style.display = "none";
-
-      Object.keys(data[course][sem][subject]).forEach(unit => {
-        const option = document.createElement("option");
-        option.value = unit;
-        option.text = unit;
-        unitSelect.appendChild(option);
-      });
-    });
-
-    unitSelect.addEventListener("change", () => {
-      const course = courseSelect.value;
-      const sem = semesterSelect.value;
-      const subject = subjectSelect.value;
-      const unit = unitSelect.value;
-      const pdfURL = data[course][sem][subject][unit];
-
-      pdfBtn.href = pdfURL;
-      pdfLink.style.display = "block";
-    });
-
-    
-
-// Rewarded interstitial
-
-show_9669778().then(() => {
-    // You need to add your user reward function here, which will be executed after the user watches the ad.
-    // For more details, please refer to the detailed instructions.
-    alert('You have seen an ad!');
-})
-
-    
-
-// Rewarded Popup
-
-show_9669778('pop').then(() => {
-    // user watch ad till the end or close it in interstitial format
-    // your code to reward user for rewarded format
-}).catch(e => {
-    // user get error during playing ad
-    // do nothing or whatever you want
-})
-
-
-
-// In-App Interstitial
-
-show_9669778({
-  type: 'inApp',
-  inAppSettings: {
-    frequency: 2,
-    capping: 0.1,
-    interval: 30,
-    timeout: 5,
-    everyPage: false
-  }
-})
-
-/*
-This value is decoded as follows:
-- show automatically 2 ads
-  within 0.1 hours (6 minutes)
-  with a 30-second interval between them
-  and a 5-second delay before the first one is shown.
-  The last digit, 0, means that the session will be saved when you navigate between pages.
-  If you set the last digit as 1, then at any transition between pages,
-  the session will be reset, and the ads will start again.
-*/
-
-
-    
-        
   </script>
 </body>
 </html>
+
+
